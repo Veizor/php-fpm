@@ -1,0 +1,88 @@
+#!/bin/sh
+set -e
+
+src=/usr/src
+dir=$src/php
+
+usage() {
+   echo "usage: $0 COMMAND"
+   echo
+   echo "Manage php source tarball lifecycle."
+   echo
+   echo "Commands:"
+   echo "    store    PHP_URL PHP_ASC_URL PHP_SHA256 PHP_MD5 GPG_KEYS Store build information"
+   echi "    download Downloads PHP source, verifies and extracts to $dir. store command is required to run first"
+   echo "    delete   Delete extracted php source located into $dir if not already done."
+   echo
+}
+
+case "$1" in
+    store)
+        if [ ! -d "$src" ]; then
+            mkdir -p $src
+        fi
+
+        echo "$2" > $src/.php_url
+        echo "$3" > $src/.php_asc_url
+        echo "$4" > $src/.php_sha256
+        echo "$5" > $src/.php_md5
+        echo "$6" > $src/.gpg_keys
+
+        ;;
+
+    download)
+        PHP_URL=$(cat $src/.php_url)
+        PHP_ASC_URL=$(cat $src/.php_asc_url)
+        PHP_SHA256=$(cat $src/.php_sha256)
+        PHP_MD5=$(cat $src/.php_md5)
+        GPG_KEYS=$(cat $src/.gpg_keys)
+
+        cd $src
+
+        wget -O php.tar.xz "$PHP_URL"
+
+        if [ -n "$PHP_SHA256" ]; then
+            echo "$PHP_SHA256 *php.tar.xz" | sha256sum -c -
+        fi
+
+        if [ -n "$PHP_MD5" ]; then
+            echo "$PHP_MD5 *php.tar.xz" | md5sum -c -
+        fi
+
+        if [ -n "$PHP_ASC_URL" ]; then
+            wget -O php.tar.xz.asc "$PHP_ASC_URL"
+            export GNUPGHOME="$(mktemp -d)"
+            for key in $GPG_KEYS; do
+                gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"
+            done
+
+            gpg --batch --verify php.tar.xz.asc php.tar.xz
+            rm -r "$GNUPGHOME"
+        fi
+
+        ;;
+
+    extract)
+        if [ -d "$dir" ]; then
+             rm -rf $dir
+        fi
+
+        if [ -f "$src/php.tar.xz" ]; then
+            mkdir -p $dir
+
+            tar -Jxf $src/php.tar.xz -C "$dir" --strip-components=1
+
+            rm -rf $src/php.tar.xz
+        fi
+        ;;
+
+
+    delete)
+        rm -rf "$dir"
+        ;;
+
+    *)
+        usage
+        exit 1
+        ;;
+esac
