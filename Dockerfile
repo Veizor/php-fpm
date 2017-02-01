@@ -1,6 +1,6 @@
-FROM veizor/base:1.0
+FROM veizor/base:latest
 
-MAINTAINER Aurimas Niekis <aurimas@niekis.lt>
+LABEL maintainer "Aurimas Niekis <aurimas@niekis.lt>"
 
 # persistent / runtime deps
 ENV PHPIZE_DEPS \
@@ -42,11 +42,11 @@ ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
 ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
-ENV GPG_KEYS A917B1ECDA84AEC2B568FED6F50ABC807BD5DCD0
+ENV GPG_KEYS A917B1ECDA84AEC2B568FED6F50ABC807BD5DCD0 528995BFEDFBA7191D46839EF9BA0ADA31CBD89E
 
-ENV PHP_VERSION 7.1.0
-ENV PHP_URL="https://secure.php.net/get/php-7.1.0.tar.xz/from/this/mirror" PHP_ASC_URL="https://secure.php.net/get/php-7.1.0.tar.xz.asc/from/this/mirror"
-ENV PHP_SHA256="a810b3f29c21407c24caa88f50649320d20ba6892ae1923132598b8a0ca145b6" PHP_MD5="cf36039303c47f493100afea522a8f53"
+ENV PHP_VERSION 7.1.1
+ENV PHP_URL="https://secure.php.net/get/php-7.1.1.tar.xz/from/this/mirror" PHP_ASC_URL="https://secure.php.net/get/php-7.1.1.tar.xz.asc/from/this/mirror"
+ENV PHP_SHA256="b3565b0c1441064eba204821608df1ec7367abff881286898d900c2c2a5ffe70" PHP_MD5="65eef256f6e7104a05361939f5e23ada"
 
 COPY bin/docker-php-source /usr/local/bin/
 
@@ -54,10 +54,10 @@ RUN set -xe; \
     \
     apk add --no-cache --virtual .fetch-deps \
         gnupg \
-        openssl \
+        libressl \
     ; \
     \
-    docker-php-source store $PHP_URL $PHP_ASC_URL $PHP_SHA256 $PHP_MD5 $GPG_KEYS; \
+    docker-php-source store $PHP_URL $PHP_ASC_URL $PHP_SHA256 $PHP_MD5 "$GPG_KEYS"; \
     docker-php-source download; \
     \
     apk del .fetch-deps
@@ -68,7 +68,7 @@ RUN set -xe \
         curl-dev \
         libedit-dev \
         libxml2-dev \
-        openssl-dev \
+        libressl-dev \
         sqlite-dev \
     \
     && export CFLAGS="$PHP_CFLAGS" \
