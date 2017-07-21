@@ -1,0 +1,46 @@
+#!/usr/bin/env php
+<?php
+
+$gpgKeys = [
+        '70' => '1A4E8B7277C42E53DBA9C7B9BCAA30EA9C0D5763 6E4F6AB321FDC07F2C332E3AC2BF0BC433CFC8B3',
+        '71' => 'A917B1ECDA84AEC2B568FED6F50ABC807BD5DCD0 528995BFEDFBA7191D46839EF9BA0ADA31CBD89E',
+        '72' => '1729F83938DA44E27BA0F4D3DBDB397470D12172 B1B44D8F021E4E2D6021E995DC9FF8D3EE5AF27F',
+];
+
+$json = json_decode(file_get_contents('https://qa.php.net/api.php?type=qa-releases&format=json'), true);
+
+$version = $argv[1] ?? false;
+
+if (false === isset($json['releases'][$version])) {
+    echo 'Such version does not exists. Available versions: [' .
+        implode(', ', array_keys($json['releases'])) . ']' . PHP_EOL;
+
+    exit(1);
+}
+
+$release = $json['releases'][$version];
+
+$sha256 = $release['sha256_xz'];
+$url = $release['files']['xz']['path'];
+$ascUrl = $url . '.asc';
+$gpgKey = $gpgKeys[substr(str_replace('.', '', $version), 0, 2)];
+
+$replacements = [
+        '$$_GPG_KEYS_$$' => $gpgKey,
+        '$$_PHP_VERSION_$$' => $version,
+        '$$_PHP_URL_$$' => $url,
+        '$$_PHP_ASC_URL_$$' => $ascUrl,
+        '$$_PHP_SHA256_$$' => $sha256,
+];
+
+$template = file_get_contents(__DIR__ . '/../Dockerfile.template');
+
+$dockerFile = str_replace(array_keys($replacements), array_values($replacements), $template);
+
+rename(__DIR__ . '/../Dockerfile', __DIR__ . '/../Dockerfile.old');
+
+file_put_contents(__DIR__ . '/../Dockerfile', $dockerFile);
+
+echo 'Done.' . PHP_EOL;
+
+exit(0);

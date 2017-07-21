@@ -10,7 +10,7 @@ usage() {
    echo "Manage php source tarball lifecycle."
    echo
    echo "Commands:"
-   echo "    store    PHP_URL PHP_ASC_URL PHP_SHA256 PHP_MD5 GPG_KEYS Store build information"
+   echo "    store    PHP_URL PHP_ASC_URL PHP_SHA256 GPG_KEYS Store build information"
    echi "    download Downloads PHP source, verifies and extracts to $dir. store command is required to run first"
    echo "    delete   Delete extracted php source located into $dir if not already done."
    echo
@@ -25,8 +25,7 @@ case "$1" in
         echo "$2" > $src/.php_url
         echo "$3" > $src/.php_asc_url
         echo "$4" > $src/.php_sha256
-        echo "$5" > $src/.php_md5
-        echo "$6" > $src/.gpg_keys
+        echo "$5" > $src/.gpg_keys
 
         ;;
 
@@ -34,7 +33,6 @@ case "$1" in
         PHP_URL=$(cat $src/.php_url)
         PHP_ASC_URL=$(cat $src/.php_asc_url)
         PHP_SHA256=$(cat $src/.php_sha256)
-        PHP_MD5=$(cat $src/.php_md5)
         GPG_KEYS=$(cat $src/.gpg_keys)
 
         cd $src
@@ -43,10 +41,6 @@ case "$1" in
 
         if [ -n "$PHP_SHA256" ]; then
             echo "$PHP_SHA256 *php.tar.xz" | sha256sum -c -
-        fi
-
-        if [ -n "$PHP_MD5" ]; then
-            echo "$PHP_MD5 *php.tar.xz" | md5sum -c -
         fi
 
         if [ -n "$PHP_ASC_URL" ]; then

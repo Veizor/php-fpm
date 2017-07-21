@@ -42,11 +42,11 @@ ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
 ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
-ENV GPG_KEYS 1729F83938DA44E27BA0F4D3DBDB397470D12172 B1B44D8F021E4E2D6021E995DC9FF8D3EE5AF27F
+ENV GPG_KEYS $$_GPG_KEYS_$$
 
-ENV PHP_VERSION 7.2.0
-ENV PHP_URL="http://downloads.php.net/~pollita/php-7.2.0beta1.tar.xz" PHP_ASC_URL="http://downloads.php.net/~pollita/php-7.2.0beta1.tar.xz.asc"
-ENV PHP_SHA256="8d7d839cb20ba48f8c947ef44274ef625630f06c7e6d13f3f64b9d17205324db"
+ENV PHP_VERSION $$_PHP_VERSION_$$
+ENV PHP_URL="$$_PHP_URL_$$" PHP_ASC_URL="$$_PHP_ASC_URL_$$"
+ENV PHP_SHA256="$$_PHP_SHA256_$$"
 
 COPY bin/docker-php-source /usr/local/bin/
 
